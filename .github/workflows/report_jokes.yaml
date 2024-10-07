@@ -2,6 +2,7 @@
 
 name: telegram joke report
 on:
+  workflow_dispatch:
   schedule:
     - cron: "0 15 * * *"
 
