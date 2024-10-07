@@ -30,6 +30,6 @@ jobs:
       - name: send joke report to osscameroon group
         uses: appleboy/telegram-action@v0.1.1
         with:
-          to: ${{ secrets.TELEGRAM_OSSCAMEROON_GROUP_ID }}
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           message_file: ./.github/workflows/report_jokes/report_joke
