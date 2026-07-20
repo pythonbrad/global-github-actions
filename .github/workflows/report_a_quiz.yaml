@@ -5,6 +5,7 @@ on:
     # Each 10hours to have at least 2 quiz questions per day (24h)
     # Note that this cron value will influence the behavior of the report_quiz
     # make sure to check the overall working after each modification
+  workflow_dispatch:
 
 jobs:
   build:
