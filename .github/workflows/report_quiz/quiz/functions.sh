@@ -5,8 +5,21 @@ source "${BASE_DIR}/common/utils.sh"
 
 # to fetch programming questions
 get_quiz_questions_answers() {
-    curl -s https://quizapi.io/api/v1/questions -G -d apiKey=${QUIZAPI_KEY} -d limit=1 -d difficulty=easy 2>/dev/stderr | \
-    jq '.[] | {question: .question, answers, tags: [.tags[].name] | join(" "), multiple_correct_answers: .multiple_correct_answers, correct_answers}'
+    TAGS=(programming devops database cloud)
+    TAGS_LENGTH=4
+    tag=${TAGS[$(expr ${RANDOM} % ${TAGS_LENGTH})]}
+    quizzes=$(curl -s https://quizapi.io/api/v1/quizzes -G -H "Authorization: Bearer ${QUIZAPI_KEY}" -d limit=32 -d tags=${tag} -d sort=newest 2>/dev/stderr)
+    quizzes_count=$(echo ${quizzes} | jq '.data | length')
+
+    if [ $quizzes_count -eq 0 ]; then
+	    return 1
+    fi
+
+    quiz=$(echo ${quizzes} | jq ".data[$(expr ${RANDOM} % ${quizzes_count})]")
+    quiz_id=$(echo ${quiz} | jq -r ".id")
+    questions_count=$(echo ${quiz} | jq -r ".questionCount")
+    curl -s https://quizapi.io/api/v1/questions -G -H "Authorization: Bearer ${QUIZAPI_KEY}" -d limit=${questions_count} -d quiz_id=${quiz_id} -d include_answers=true -d random=true 2>/dev/stderr | \
+    jq ".data[$(expr $RANDOM % ${questions_count})] | {question: .text, answers: [.answers[].text], tags: .category, multiple_correct_answers: .answers | map(select([.isCorrect])) | length > 1, correct_answers: [.answers[].isCorrect]}"
 }
 
 # A curl to send message in a chat
@@ -20,7 +33,7 @@ send_message(){
 
 # Send the poll
 send_poll(){
-    payload="{\"chat_id\": ${TELEGRAM_CHAT_ID}, \"question\": \"😏 Can you guess the good answer(s) ?\n🤪 Don't worry it's anonymous !\",\"options\": [$1],\"allows_multiple_answers\": $2,\"is_anonymous\": 0}"
+    payload="{\"chat_id\": ${TELEGRAM_CHAT_ID}, \"question\": \"😏 Can you guess the good answer(s) ?\n🤪 Don't worry it's anonymous !\",\"options\": [$1],\"allows_multiple_answers\": $2,\"is_anonymous\": 0, \"allows_revoting\": false}"
     # echo "poll-payload: ${payload}"
     # echo "----------------------------------------------"
 
@@ -33,12 +46,12 @@ send_poll(){
 propose_quiz(){
     quiz_data=$(get_quiz_questions_answers)
     question=$(jq -r '.question' <<< ${quiz_data})
-    A=$(jq -r '.answers.answer_a // empty' <<< ${quiz_data})
-    B=$(jq -r '.answers.answer_b // empty' <<< ${quiz_data})
-    C=$(jq -r '.answers.answer_c // empty' <<< ${quiz_data})
-    D=$(jq -r '.answers.answer_d // empty' <<< ${quiz_data})
-    E=$(jq -r '.answers.answer_e // empty' <<< ${quiz_data})
-    F=$(jq -r '.answers.answer_f // empty' <<< ${quiz_data})
+    A=$(jq -r '.answers[0] // empty' <<< ${quiz_data})
+    B=$(jq -r '.answers[1] // empty' <<< ${quiz_data})
+    C=$(jq -r '.answers[2] // empty' <<< ${quiz_data})
+    D=$(jq -r '.answers[3] // empty' <<< ${quiz_data})
+    E=$(jq -r '.answers[4] // empty' <<< ${quiz_data})
+    F=$(jq -r '.answers[5] // empty' <<< ${quiz_data})
     tags=$(jq -r '.tags' <<< ${quiz_data})
     multiple_correct_answers=$(jq -r '.multiple_correct_answers' <<< ${quiz_data})
     msg="👨🏾💻 Quiz Time !?\n${question}\nHints: ${tags}"

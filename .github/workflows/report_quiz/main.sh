@@ -2,6 +2,10 @@
 
 set -e
 
+if ! [ -z "${DEBUG}" ]; then
+    set -x
+fi
+
 BASE_DIR=$(dirname "${BASH_SOURCE[0]}")
 DATABASE_DIR="${BASE_DIR}/database"
 ARCHIVE_DIR="${BASE_DIR}/archive"
@@ -16,6 +20,14 @@ source "${BASE_DIR}/leaderboard/functions.sh"
 source "${BASE_DIR}/env.sh"
 
 mkdir -p "${BASE_DIR}/database"
+
+if ! which curl > /dev/null; then
+	echo "'curl' command needed!"
+fi
+
+if ! which jq > /dev/null; then
+	echo "'jq' command needed!"
+fi
 
 if [ -z ${TELEGRAM_BOT_TOKEN} ]; then
 	echo "TELEGRAM_BOT_TOKEN is not set!"
@@ -34,7 +46,7 @@ skipped_quizzes=0
 # determine round
 get_current_round(){
     if [ -d ${ARCHIVE_DIR} ]; then
-        expr $(ls ${ARCHIVE_DIR} | wc -l) + 1
+        expr $(find ${ARCHIVE_DIR} -depth 1 | wc -l) + 1
     else
 	echo 1
     fi
@@ -42,7 +54,7 @@ get_current_round(){
 
 # whether there is a ongoing competition
 has_ongoing_competition() {
-    test $(ls ${DATABASE_DIR}/*.json | wc -l) -ne 0
+    test $(find ${DATABASE_DIR} -iname *.json -depth 1 | wc -l) -ne 0
 }
 
 # inform about a new round of quiz
@@ -69,7 +81,7 @@ send_quiz(){
             # Save the quiz data in the database
             filename=$(jq -r '.poll_id // empty' ${TEMPFILE} -r)
             if [ ! -z "${filename}" ]; then
-                mv ${TEMPFILE} "${DATABASE_DIR}/${filename}.json"
+                cp ${TEMPFILE} "${DATABASE_DIR}/${filename}.json"
             fi
             break
         else
@@ -87,12 +99,12 @@ fetch_quiz_user_answers(){
     user_answers=$(get_user_answers)
 
     # we save the quiz user answers
-    for quiz_data_file in $(ls ${DATABASE_DIR}/*.json); do
+    for quiz_data_file in $(find ${DATABASE_DIR} -iname *.json -depth 1); do
         poll_id=$(cut -d '.' -f 1 <(basename ${quiz_data_file}))
         quiz_user_answers=$(jq ".[\"${poll_id}\"]" <<< ${user_answers})
-        # update quiz_data in ensuring unqie answer per user
+        # update quiz_data in ensuring unique answer per user
         jq ".user_answers = ((.user_answers // []) + ${quiz_user_answers} | unique_by(.username))" ${quiz_data_file} > ${TEMPFILE}
-        mv ${TEMPFILE} ${quiz_data_file}
+        cp ${TEMPFILE} ${quiz_data_file}
     done
 }
 
@@ -102,7 +114,7 @@ stop_quiz_competition(){
     has_ongoing_competition || return 0
 
     # enumerate quiz data
-    quiz_data_files=$(ls ${DATABASE_DIR}/*.json)
+    quiz_data_files=$(find ${DATABASE_DIR} -iname *.json -depth 1)
 
     # stop all the active quizzes
     for quiz_data_file in ${quiz_data_files}; do
@@ -117,7 +129,7 @@ stop_quiz_competition(){
     message="🏆 OSSCameroon Quiz Competition, Round $(get_current_round): Results"
 
     # check if we have a result
-    if [ ${quiz_data_score} == '[]' ]; then
+    if [ "${quiz_data_score}" == '[]' ]; then
         message="${message}\n\n
 
 And the winner is... drumroll please... absolutely no one! 🥲\n\n
