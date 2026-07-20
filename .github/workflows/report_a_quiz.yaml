@@ -20,9 +20,9 @@ jobs:
       - name: Config the environment variable
         shell: bash
         run: |
-          echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" >> env.sh
-          echo "TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }}" >> env.sh
-          echo "QUIZAPI_KEY=${{ secrets.QUIZAPI_KEY }}" >> env.sh
+          echo "TELEGRAM_BOT_TOKEN='${{ secrets.TELEGRAM_BOT_TOKEN }}'" >> env.sh
+          echo "TELEGRAM_CHAT_ID='${{ secrets.TELEGRAM_CHAT_ID }}'" >> env.sh
+          echo "QUIZAPI_KEY='${{ secrets.QUIZAPI_KEY }}'" >> env.sh
       
       - name: Load the database
         run: |
@@ -47,8 +47,8 @@ jobs:
           if [ $(date +%a_%p) == Mon_AM ]; then start_quiz_competition; fi
           # end the competition each sunday evening
           if [ $(date +%a_%p) == Sun_PM ]; then
-            stop_quiz_competition
             touch /tmp/skip_send_quiz
+            stop_quiz_competition
           fi
 
       - name: Send quiz to the group
@@ -62,8 +62,8 @@ jobs:
         shell: bash
         run: |
           if [ ! -z "$(git status -s --ignored archive database)" ]; then
-            git config user.name "osscameroon"
-            git config user.email "bot@osscameroon.com"
+            git config user.name "github-actions"
+            git config user.email "github-actions@github.com"
             if [ -d database ]; then git add database -f; fi
             if [ -d archive ]; then git add archive -f; fi
             git commit -m "update"
