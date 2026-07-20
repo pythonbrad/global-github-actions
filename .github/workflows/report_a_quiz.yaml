@@ -20,13 +20,14 @@ jobs:
         shell: bash
         run: |
           echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" >> env.sh
-          echo "TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_OSSCAMEROON_GROUP_ID }}" >> env.sh
+          echo "TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }}" >> env.sh
           echo "QUIZAPI_KEY=${{ secrets.QUIZAPI_KEY }}" >> env.sh
       
       - name: Load the database
         run: |
             git init
-            git remote add origin https://${{ secrets.REPORTQUIZ_DATA_REPO_TOKEN }}@github.com/osscameroon/reportquiz_data.git
+            # https://<repo-token>@github.com/<github-handle>/<repo-name>.git
+            git remote add origin ${{ secrets.REPORTQUIZ_DATA_REPO_URL }}
             git pull origin main
             git switch -c main
 
