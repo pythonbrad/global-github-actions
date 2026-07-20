@@ -19,7 +19,7 @@ get_quiz_questions_answers() {
     quiz_id=$(echo ${quiz} | jq -r ".id")
     questions_count=$(echo ${quiz} | jq -r ".questionCount")
     curl -s https://quizapi.io/api/v1/questions -G -H "Authorization: Bearer ${QUIZAPI_KEY}" -d limit=${questions_count} -d quiz_id=${quiz_id} -d include_answers=true -d random=true 2>/dev/stderr | \
-    jq ".data[$(expr $RANDOM % ${questions_count})] | {question: .text, answers: [.answers[].text], tags: .category, multiple_correct_answers: .answers | map(select([.isCorrect])) | length > 1, correct_answers: [.answers[].isCorrect]}"
+	    jq ".data[$(expr $RANDOM % ${questions_count})] | {question: .text, answers: [.answers[].text], tags: .category, multiple_correct_answers: ((.answers | map(select([.isCorrect])) | length) > 1), correct_answers: [.answers[].isCorrect]}"
 }
 
 # A curl to send message in a chat
