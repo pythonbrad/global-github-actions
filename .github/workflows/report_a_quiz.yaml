@@ -26,7 +26,7 @@ jobs:
       - name: Load the database
         run: |
             git init
-            # https://<repo-token>@github.com/<github-handle>/<repo-name>.git
+            # https://<token>@github.com/username/repository.git
             git remote add origin ${{ secrets.REPORTQUIZ_DATA_REPO_URL }}
             git pull origin main
             git switch -c main
