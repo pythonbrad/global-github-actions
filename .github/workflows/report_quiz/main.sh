@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -e
-DEBUG=1
+
 if ! [ -z "${DEBUG}" ]; then
     set -x
 fi
