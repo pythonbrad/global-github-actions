@@ -5,7 +5,7 @@ source "${BASE_DIR}/common/utils.sh"
 
 # to fetch programming questions
 get_quiz_questions_answers() {
-    TAGS=(programming devops database cloud)
+    TAGS=(python java interview algorithms linux security devops database cloud)
     TAGS_LENGTH=4
     tag=${TAGS[$(expr ${RANDOM} % ${TAGS_LENGTH})]}
     quizzes=$(curl -s https://quizapi.io/api/v1/quizzes -G -H "Authorization: Bearer ${QUIZAPI_KEY}" -d limit=32 -d tags=${tag} -d sort=newest 2>/dev/stderr)
