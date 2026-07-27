@@ -120,6 +120,8 @@ stop_quiz_competition(){
     for quiz_data_file in ${quiz_data_files}; do
         # shouldn't break the operation in case of that a poll is already closed
         close_poll $(jq -r '.message_id' ${quiz_data_file}) || true
+	# to avoid to exceed the rate limit of 20 messages per minute.
+	sleep 4
     done
 
     # compute score
@@ -163,7 +165,10 @@ Congratulations, and thank you to all who participated!\n\n
 For further details, you can ask help in the OSS Cameroun telegram group.
 "
 
-    send_message "$(escp ${message})"
+    while ! send_message "$(escp ${message})"; do
+       echo Failed to the send leaderboard, retrying in 30s...
+       sleep 30
+    done
 
     # end the competition
     # move all the current quiz_data in the archive folder
