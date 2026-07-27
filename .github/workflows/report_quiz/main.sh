@@ -46,7 +46,7 @@ skipped_quizzes=0
 # determine round
 get_current_round(){
     if [ -d ${ARCHIVE_DIR} ]; then
-        expr $(find ${ARCHIVE_DIR} -depth 1 | wc -l) + 1
+        expr $(find ${ARCHIVE_DIR} | wc -l) + 1
     else
 	echo 1
     fi
@@ -54,7 +54,7 @@ get_current_round(){
 
 # whether there is a ongoing competition
 has_ongoing_competition() {
-    test $(find ${DATABASE_DIR} -iname *.json -depth 1 | wc -l) -ne 0
+    test $(find ${DATABASE_DIR} -iname '*.json' | wc -l) -ne 0
 }
 
 # inform about a new round of quiz
@@ -99,7 +99,7 @@ fetch_quiz_user_answers(){
     user_answers=$(get_user_answers)
 
     # we save the quiz user answers
-    for quiz_data_file in $(find ${DATABASE_DIR} -iname *.json -depth 1); do
+    for quiz_data_file in $(find ${DATABASE_DIR} -iname '*.json'); do
         poll_id=$(cut -d '.' -f 1 <(basename ${quiz_data_file}))
         quiz_user_answers=$(jq ".[\"${poll_id}\"]" <<< ${user_answers})
         # update quiz_data in ensuring unique answer per user
@@ -114,7 +114,7 @@ stop_quiz_competition(){
     has_ongoing_competition || return 0
 
     # enumerate quiz data
-    quiz_data_files=$(find ${DATABASE_DIR} -iname *.json -depth 1)
+    quiz_data_files=$(find ${DATABASE_DIR} -iname '*.json')
 
     # stop all the active quizzes
     for quiz_data_file in ${quiz_data_files}; do
