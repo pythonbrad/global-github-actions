@@ -44,9 +44,9 @@ jobs:
         run: |
           DEBUG=1 source main.sh
           # start a new competition each monday morning
-          if [ $(date +%a_%p) == Mon_AM ]; then start_quiz_competition; fi
+          if [ $(date +%a_%p) == Tue_AM ]; then start_quiz_competition; fi
           # end the competition each sunday evening
-          if [ $(date +%a_%p) == Sun_PM ]; then
+          if [ $(date +%a_%p) == Mon_PM ]; then
             touch /tmp/skip_send_quiz
             stop_quiz_competition
           fi
