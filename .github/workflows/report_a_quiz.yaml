@@ -42,7 +42,7 @@ jobs:
       - name: Automate the management of the competition
         shell: bash
         run: |
-          source main.sh
+          DEBUG=1 source main.sh
           # start a new competition each monday morning
           if [ $(date +%a_%p) == Mon_AM ]; then start_quiz_competition; fi
           # end the competition each sunday evening
